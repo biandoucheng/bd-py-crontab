@@ -45,4 +45,4 @@ for i in range(len(tasks)):
 #9、执行相关任务
 ctb = Crontaber(crons=tasks)
 shced = run_schedule.run_schedule(pool_num=10,cron=ctb,conf_dir=BD_CTB_CONF_DIR)
-shced.run()
+shced.run(True)

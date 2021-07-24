@@ -1,4 +1,15 @@
-import configparser,os
+import configparser,os,traceback
+
+class ConfigError(Exception):
+    """
+    定义配置类异常
+    """
+    def __init__(self, errorinfor):
+        self.error = errorinfor
+
+    def __str__(self):
+        return self.error
+
 
 class Configer:
     """
@@ -95,14 +106,17 @@ class Configer:
         :param flu: bool 是否强制刷新 False
         :return:
         """
-        if not name or not isinstance(name,str):
-            return
+        try:
+            if not name or not isinstance(name, str):
+                return
 
-        if flu or name+'.py' not in self.loaded_conf_sets:
-            self.__load_conf_module(name=name)
+            if flu or name + '.py' not in self.loaded_conf_sets:
+                self.__load_conf_module(name=name)
 
-        if flu or name + '.ini-'+section.lower() not in self.loaded_conf_sets:
-            self.__load_conf_ini(name=name,section=section)
+            if flu or name + '.ini-' + section.lower() not in self.loaded_conf_sets:
+                self.__load_conf_ini(name=name, section=section)
+        except Exception as e:
+            raise ConfigError("配置文件初始化失败")
 
 
 
@@ -210,15 +224,15 @@ class Configer:
 
         try:
             real_path = self.__root + '/'+name+'.ini'
-            self.__cf_parse.read(real_path)
-            if section not in self.__cf_parse.sections():
+            self.__cf_parse.read(real_path,encoding=self.__encode_str)
+            if section != 'DEFAULT' and section not in self.__cf_parse.sections():
                 self.__cf_parse.add_section(section=section)
-            self.__cf_parse.set(section=section,option=key,value=val)
-            res = self.__cf_parse.write(open(real_path,'w'))
-            print("配置写入问题 >",res)
+
+            self.__cf_parse.set(section=section,option=key,value=str(val))
+            res = self.__cf_parse.write(open(file=real_path,mode='w',encoding=self.__encode_str))
             return True
         except:
-            return False
+            raise ConfigError("配置写入失败")
 
 
 
