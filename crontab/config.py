@@ -215,6 +215,7 @@ class Configer:
                 self.__cf_parse.add_section(section=section)
             self.__cf_parse.set(section=section,option=key,value=val)
             res = self.__cf_parse.write(open(real_path,'w'))
+            print("配置写入问题 >",res)
             return True
         except:
             return False

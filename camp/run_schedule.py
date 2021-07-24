@@ -8,11 +8,12 @@ class run_schedule(schedule.Schedule):
 
     def before_run_task(self,**kwargs):
         print("任务执行之前执行的内容")
+        print(kwargs)
 
 
     def after_run_task(self,*args,**kwargs):
         print("一个任务执行完成之后要执行的内容")
-        print(args)
+        print(args,kwargs)
 
 
     def before_start(self):

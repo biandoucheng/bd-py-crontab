@@ -1,4 +1,4 @@
-import threading,time,traceback
+import threading,time,traceback,datetime
 from concurrent.futures import ThreadPoolExecutor,wait
 from crontab.crontaber import Crontaber
 from crontab.config import Configer
@@ -28,10 +28,10 @@ class Schedule:
         :param obj: object 任务对象
         :return:
         """
-        print("执行任务 >",task)
         self.before_run_task(**task)
-        res = task['event']().run()
-        self.after_run_task(res,**task)
+        task['event'].run()
+        self.after_run_task(**task)
+
 
 
 
@@ -123,8 +123,13 @@ class Schedule:
     def run(self,just_once=False):
         run = True
         while run:
+            #只运行一次的项目，直接运行
             if just_once:
                 run = False
+            else:
+                #循环任务则判断，每分钟的第一秒进行任务执行检测，避免重复执行，也意味着该定时器是分钟级别的
+                if time.localtime().tm_sec != 1:
+                    continue
 
             #检测信号
             if not self.sign_check():
@@ -143,16 +148,12 @@ class Schedule:
             for i in range(len(tasks)):
                 try:
                     task = tasks[i]
-                    handel = self.thread_pool.submit(self.call_task,event=task)
+                    handel = self.thread_pool.submit(self.call_task,task=task)
                     self.handle_pools.append(handel)
                 except Exception as e:
                     print(traceback.format_exc())
             else:
-                print("等待执行。。。")
-                try:
-                    wait(self.handle_pools)
-                except Exception as e:
-                    print("任务执行失败:\n"+traceback.format_exc())
+                wait(self.handle_pools)
 
             #任务执行后代码
             self.after_run_over()

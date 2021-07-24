@@ -1,4 +1,4 @@
-import sys,os,importlib
+import sys,os,importlib,time
 
 """
 全局配置设定
@@ -25,9 +25,7 @@ BD_CTB_TASK_MODULE_PATH = BD_CTB_TASK_DIR.replace('/','.').replace('\\','.')
 #6、导入调度器支持模块
 from crontab.crontaber import Crontaber
 from camp import run_schedule
-#7、导入任务实例
-importlib.import_module(BD_CTB_TASK_MODULE_PATH)
-#8、添加任务列表
+#7、添加任务列表
 tasks = [
     {
         "cron": '* * * * *',#指定执行时间
@@ -38,8 +36,13 @@ tasks = [
     }
 ]
 
+#8、导入任务实例
+for i in range(len(tasks)):
+    item = tasks[i]['event']
+    tasks[i]['event'] = importlib.import_module(BD_CTB_TASK_MODULE_PATH + '.' + item)
+
+
 #9、执行相关任务
 ctb = Crontaber(crons=tasks)
-shced = run_schedule.run_schedule(pool_num=2,cron=ctb,conf_dir=BD_CTB_CONF_DIR)
-shced.run(False)
-
+shced = run_schedule.run_schedule(pool_num=10,cron=ctb,conf_dir=BD_CTB_CONF_DIR)
+shced.run()
