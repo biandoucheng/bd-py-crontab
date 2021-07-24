@@ -1,4 +1,4 @@
-import threading,time
+import threading,time,traceback
 from concurrent.futures import ThreadPoolExecutor,wait
 from crontab.crontaber import Crontaber
 from crontab.config import Configer
@@ -7,7 +7,7 @@ class Schedule:
     def __init__(self,pool_num:int,cron:Crontaber,conf_dir:str=''):
         #初始化线程池
         self.thread_lock  = threading.Lock()
-        self.thread_pool  = ThreadPoolExecutor(10)
+        self.thread_pool  = ThreadPoolExecutor(pool_num)
         self.handle_pools = []
         #初始化定时器
         self.cron         = cron
@@ -17,7 +17,7 @@ class Schedule:
         else:
             self.cong_dir = './'
         #配置类
-        self.configer = Configer(conf_catalog=self.cong_dir,env_dict={})
+        self.configer = Configer(conf_catalog=self.cong_dir,encode_str="utf-8")
 
 
 
@@ -28,6 +28,7 @@ class Schedule:
         :param obj: object 任务对象
         :return:
         """
+        print("执行任务 >",task)
         self.before_run_task(**task)
         res = task['event']().run()
         self.after_run_task(res,**task)
@@ -140,11 +141,18 @@ class Schedule:
 
             #循环执行任务
             for i in range(len(tasks)):
-                task = tasks[i]
-                handel = self.thread_pool.submit(self.call_task,event=task)
-                self.handle_pools.append(handel)
+                try:
+                    task = tasks[i]
+                    handel = self.thread_pool.submit(self.call_task,event=task)
+                    self.handle_pools.append(handel)
+                except Exception as e:
+                    print(traceback.format_exc())
             else:
-                wait(self.handle_pools)
+                print("等待执行。。。")
+                try:
+                    wait(self.handle_pools)
+                except Exception as e:
+                    print("任务执行失败:\n"+traceback.format_exc())
 
             #任务执行后代码
             self.after_run_over()

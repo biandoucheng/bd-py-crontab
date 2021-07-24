@@ -5,39 +5,15 @@ class Configer:
     1、配置文件加载类
     2、.py配置文件的优先级高于.ini配置文件的优先级
     """
-    def __init__(self,conf_catalog:str,env_dict:dict):
+    def __init__(self,conf_catalog:str,encode_str:str='utf-8'):
         #配置文件目录
-        self.__root = conf_catalog
-        #系统环境
-        self.__env = env_dict
+        self.__root = conf_catalog.rstrip('/')
+        #编码格式
+        self.__encode_str = encode_str
         #配置文件模块字典
         self.__conf_dict = dict()
         #已经加载的配置文件集合
         self.loaded_conf_sets = set()
-
-
-    def get_env(self,key=''):
-        """
-        读取env环境
-        :param key: sting 环境变量的 key
-        :return: dict 环境变量字段
-        """
-        if key:
-            if key in self.__env:
-                return self.__env[key]
-            else:
-                return None
-        else:
-            return self.__env
-
-
-
-    def load_env(self):
-        """
-        加载系统环境
-        :return: dict 环境变量字段
-        """
-        self._env = self.get_env()
 
 
 
@@ -57,7 +33,7 @@ class Configer:
         :param name: str 配置为文件名称
         :return: bool
         """
-        return os.path.exists(self.__root.rstrip('/') + '/' + name)
+        return os.path.exists(self.__root + '/' + name)
 
 
 
@@ -92,12 +68,12 @@ class Configer:
 
         if name not in self.__conf_dict:
             self.__conf_dict[name] = {}
-        self.__cf_parse.read(name+'.ini')
+        self.__cf_parse.read(filenames=self.__root+'/'+name+'.ini',encoding=self.__encode_str)
 
         if not section or section.lower() == 'default':
            section = 'DEFAULT'
 
-        if section not in self.__cf_parse.sections():
+        if section != 'DEFAULT' and section not in self.__cf_parse.sections():
             return
 
         itms = self.__cf_parse.items(section=section)
@@ -233,7 +209,7 @@ class Configer:
             section = 'DEFAULT'
 
         try:
-            real_path = self.__root.rstrip('/')+'/'+name+'.ini'
+            real_path = self.__root + '/'+name+'.ini'
             self.__cf_parse.read(real_path)
             if section not in self.__cf_parse.sections():
                 self.__cf_parse.add_section(section=section)

@@ -12,6 +12,7 @@ class run_schedule(schedule.Schedule):
 
     def after_run_task(self,*args,**kwargs):
         print("一个任务执行完成之后要执行的内容")
+        print(args)
 
 
     def before_start(self):
