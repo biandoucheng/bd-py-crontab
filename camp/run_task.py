@@ -8,8 +8,8 @@ import sys,os,importlib,time
 4、导入全局模块路径
 5、设置任务导入模块路径
 6、导入调度器支持模块
-7、导入任务实例
-8、添加任务列表
+7、添加任务列表
+8、导入任务模块
 9、执行调度器相关任务
 """
 #1、设置项目根目录
@@ -28,7 +28,7 @@ from camp import run_schedule
 #7、添加任务列表
 tasks = [
     {
-        "cron": '* * * * *',#指定执行时间
+        "cron": '30 17 * * *',#指定执行时间
         "event_key": 'helloworld',#事件名称
         "event": 'helloworld',#事件对象
         "stop":False,#是否停止该事件
@@ -45,4 +45,4 @@ for i in range(len(tasks)):
 #9、执行相关任务
 ctb = Crontaber(crons=tasks)
 shced = run_schedule.run_schedule(pool_num=10,cron=ctb,conf_dir=BD_CTB_CONF_DIR)
-shced.run(True)
+shced.run()
