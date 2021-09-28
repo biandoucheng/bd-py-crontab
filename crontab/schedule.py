@@ -129,6 +129,7 @@ class Schedule:
             else:
                 #循环任务则判断，每分钟的第一秒进行任务执行检测，避免重复执行，也意味着该定时器是分钟级别的
                 if time.localtime().tm_sec != 1:
+                    time.sleep(1)
                     continue
 
             #检测信号
